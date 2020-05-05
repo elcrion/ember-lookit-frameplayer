@@ -558,18 +558,18 @@ export default class DiscreteBounce extends PaddleGames {
     if(super.ball.state === 'start' ||  super.ball.state === 'hit' || super.ball.state === 'bounce' || super.ball.state === 'fall') {
 
 
-      super.exportData.ball_position_x.push(super.convertXvalue(super.ball.position.x));
-      super.exportData.ball_position_y.push(super.convertYvalue(super.ball.position.y));
-      super.exportData.ball_timestamp.push(super.ball.timestamp);
-      super.exportData.timestamp.push(super.getElapsedTime());
-      super.exportData.paddle_position_y.push(super.convertYvalue(super.paddle.position.y));
-      super.exportData.trial = super.currentRounds;
-      super.exportData.trajectory = hArray[super.currentRounds];
-      super.exportData.feedback = this.ballState();
-      super.exportData.paddle_timestamp.push(super.paddle.time);
-      super.exportData.paddle_x = super.convertXvalue(super.paddle.position.x);
-      super.exportData.trialType = this.context.trialType;
-      super.exportData.paddle_center_x = super.convertXvalue(super.paddle.position.x   +  (super.paddle.dimensions.width / 2));
+      // super.exportData.ball_position_x.push(super.convertXvalue(super.ball.position.x));
+      // super.exportData.ball_position_y.push(super.convertYvalue(super.ball.position.y));
+      // super.exportData.ball_timestamp.push(super.ball.timestamp);
+      // super.exportData.timestamp.push(super.getElapsedTime());
+      // super.exportData.paddle_position_y.push(super.convertYvalue(super.paddle.position.y));
+      // super.exportData.trial = super.currentRounds;
+      // super.exportData.trajectory = hArray[super.currentRounds];
+      // super.exportData.feedback = this.ballState();
+      // super.exportData.paddle_timestamp.push(super.paddle.time);
+      // super.exportData.paddle_x = super.convertXvalue(super.paddle.position.x);
+      // super.exportData.trialType = this.context.trialType;
+      // super.exportData.paddle_center_x = super.convertXvalue(super.paddle.position.x   +  (super.paddle.dimensions.width / 2));
 
 
     }

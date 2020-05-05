@@ -507,15 +507,15 @@ export default class DiscreteButtonSpatial extends Base {
       }
 
 
-      super.exportData.window = this.getCorrectIndex()+1;
-      super.exportData.selected_button = target_state + 1;
-      super.exportData.obstruction_number = trajectoryParameters[super.currentRounds][gameRandomization.OBSTRUCTION];
-      super.exportData.trial = super.currentRounds;
-      super.exportData.trialType = this.context.trialType;
-      super.exportData.ball_position_x.push(super.convertXvalue(super.ball.position.x));
-      super.exportData.ball_position_y.push(super.convertYvalue(super.ball.position.y));
-      super.exportData.ball_timestamp.push(super.ball.timestamp);
-      super.exportData.timestamp.push(super.getElapsedTime());
+      // super.exportData.window = this.getCorrectIndex()+1;
+      // super.exportData.selected_button = target_state + 1;
+      // super.exportData.obstruction_number = trajectoryParameters[super.currentRounds][gameRandomization.OBSTRUCTION];
+      // super.exportData.trial = super.currentRounds;
+      // super.exportData.trialType = this.context.trialType;
+      // super.exportData.ball_position_x.push(super.convertXvalue(super.ball.position.x));
+      // super.exportData.ball_position_y.push(super.convertYvalue(super.ball.position.y));
+      // super.exportData.ball_timestamp.push(super.ball.timestamp);
+      // super.exportData.timestamp.push(super.getElapsedTime());
 
     }
 
