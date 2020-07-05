@@ -521,7 +521,6 @@ export default class Base {
       document.exitPointerLock = document.exitPointerLock || document.mozExitPointerLock || document.webkitExitPointerLock;
       document.exitPointerLock();
       document.fullscreenElement.style.setProperty('cursor', 'default', 'important');
-      this.context.send('exitFullscreen');
       this.context.stopRecorder().finally(() => {
           this.context.destroyRecorder();
           this.context.send('next');

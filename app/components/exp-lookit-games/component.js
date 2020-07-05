@@ -444,6 +444,8 @@ export default ExpFrameBaseComponent.extend(FullScreen, VideoRecord, {
           this.send('play');
         }
         if (this.get('showProgress') === true) {
+            this.context.send('exitFullscreen');
+            this.context.send('showFullscreen');
             let current_game = this.get('gameType') + 1;
             let baseDir = this.get('baseDir');
             switch (current_game){
