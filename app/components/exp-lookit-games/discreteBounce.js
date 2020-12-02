@@ -143,7 +143,7 @@ export default class DiscreteBounce extends PaddleGames {
     super.fillImageArray(imageURLs,images);
 
     sounds[gameSound.START].addEventListener('canplaythrough', this.initGame(), false);
-    sounds[gameSound.START].addEventListener('playing', super.onSoundEvent);
+    //sounds[gameSound.START].addEventListener('playing', super.onSoundEvent);
     document.addEventListener("mousemove", super.onMouseMove);
     super.init();
 
@@ -194,6 +194,7 @@ export default class DiscreteBounce extends PaddleGames {
 
     if (super.gameState.initialTime === 0  ) {
       sounds[gameSound.START].play();
+      super.gameState.startTime = 0;
       super.gameState.initialTime = new Date().getTime();
     }
 
