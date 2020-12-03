@@ -199,7 +199,7 @@ export default class DiscreteBounce extends PaddleGames {
 
     if (super.ball.state === 'start') {
       super.moveBallToStart( images[gameImage.BALL]);
-      if (super.gameState.initialTime > 0 && super.isOutsideBox(7)) {
+      if (super.gameState.initialTime > 0 ) {
         super.gameState.initialTime = 0;
         sounds[gameSound.START].pause();
         sounds[gameSound.START].currentTime = 0;
