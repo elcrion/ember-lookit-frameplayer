@@ -14,7 +14,7 @@ import PaddleGames from './paddleGames';
 let target = {}; // Target parameters object
 let alpha = 0.7; // Restitute factor
 let hArray = []; // Actual height parameters are calculated from the Initial height by multiplying the  uniformly randomized  values in  vector
-let jitterT = 0; // Time jitter (variates from 500 ms to 1500 ms), time between sound start and ball starting to fly
+let jitterT = 500; // Time jitter (variates from 500 ms to 1500 ms), time between sound start and ball starting to fly
 let Height = 0.65; // Current trajectory height
 let token = {}; // Token parameters object
 let tokenReached = {}; // Token parameters object when target is reached
