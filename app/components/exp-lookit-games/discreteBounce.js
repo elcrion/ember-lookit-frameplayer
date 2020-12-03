@@ -182,7 +182,7 @@ export default class DiscreteBounce extends PaddleGames {
   loop() {
     super.loop();
     super.paddleObject();
-    let paddleBoxColor = super.Utils.blueColor;
+    let paddleBoxColor = super.Utils.redColor;
     super.generateTrajectoryParams(hArray[super.currentRounds], Height);
     super.createLauncher(images[gameImage.BALLBOX]);
     super.drawImageObject(super.paddle,images[gameImage.PADDLE]);
