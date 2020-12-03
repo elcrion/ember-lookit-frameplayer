@@ -183,7 +183,6 @@ export default class DiscreteBounce extends PaddleGames {
     super.loop();
     super.paddleObject();
     let paddleBoxColor = super.Utils.blueColor;
-    super.createPaddleBox(paddleBoxColor);
     super.generateTrajectoryParams(hArray[super.currentRounds], Height);
     super.createLauncher(images[gameImage.BALLBOX]);
     super.drawImageObject(super.paddle,images[gameImage.PADDLE]);
@@ -205,7 +204,6 @@ export default class DiscreteBounce extends PaddleGames {
         sounds[gameSound.START].pause();
         sounds[gameSound.START].currentTime = 0;
         paddleBoxColor = super.Utils.redColor;
-        super.createPaddleBox(paddleBoxColor);
       }
       if (super.gameState.initialTime > 0 && super.getElapsedTime() > jitterT) {
         sounds[gameSound.START].pause();
@@ -216,6 +214,8 @@ export default class DiscreteBounce extends PaddleGames {
       }
 
     }
+
+    super.createPaddleBox(paddleBoxColor);
 
     if ((hitTheTarget || hitTheWall) && super.ball.state !== 'done') {
 
