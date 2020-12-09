@@ -3,7 +3,7 @@
  * Last modified 3/31/19 7:58 PM.
  * Copyright (c) 2019 . All rights reserved.
  */
-import ExpFrameBaseComponent from '../../components/exp-frame-base/component';
+import ExpFrameBaseComponent from '../exp-frame-base/component';
 import layout from './template';
 import FullScreen from '../../mixins/full-screen';
 import VideoRecord from '../../mixins/video-record';
