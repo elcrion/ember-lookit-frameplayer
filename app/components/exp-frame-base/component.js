@@ -12,17 +12,13 @@ import SessionRecord from '../../mixins/session-record';
 
 /** An abstract component to extend when defining new Lookit frames
  *
- * This provides common base behavior required for any experiment frame. All experiment frames must extend this one.
+ * This provides common base behavior for all experiment frames.
  *
- * This frame has no configuration options because all of its logic is internal, and should not be directly used
- * in an experiment.
- *
- * As a user you will almost never need to insert a component into a template directly- the platform should handle that
+ * As a user you will almost never need to insert a component into a template directly - the platform should handle that
  *  by automatically inserting an <a href="../classes/Exp-player.html" class="crosslink">exp-player</a> component when your experiment starts.
- * However, a sample template usage is provided below for completeness.
  *
- * ```handlebars
- *  {{
+ * @example
+ {{
       component currentFrameTemplate
         frameIndex=frameIndex
         frameConfig=currentFrameConfig
@@ -35,20 +31,104 @@ import SessionRecord from '../../mixins/session-record';
         exit=(action 'exit')
         previous=(action 'previous')
         saveHandler=(action 'saveFrame')
-        skipone=(action 'skipone')
         extra=extra
-    }}
- * ```
- * @class Exp-frame-base
+    }}``
+ *
+ * @class ExpFrameBase
+     * @param generateProperties{String} - Function to generate additional properties for this frame (like {"kind": "exp-lookit-text"})
+     * at the time the frame is initialized. Allows behavior of study to depend on what has
+     * happened so far (e.g., answers on a form or to previous test trials).
+     * Must be a valid Javascript function, returning an object, provided as
+     * a string.
+     *
+     *
+     * Arguments that will be provided are: `expData`, `sequence`, `child`, `pastSessions`, `conditions`.
+     *
+     *
+     * `expData`, `sequence`, and `conditions` are the same data as would be found in the session data shown
+     * on the Lookit experimenter interface under 'Individual Responses', except that
+     * they will only contain information up to this point in the study.
+     *
+     *
+     * `expData` is an object consisting of `frameId`: `frameData` pairs; the data associated
+     * with a particular frame depends on the frame kind.
+     *
+     *
+     * `sequence` is an ordered list of frameIds, corresponding to the keys in `expData`.
+     *
+     *
+     * `conditions` is an object representing the data stored by any randomizer frames;
+     * keys are `frameId`s for randomizer frames and data stored depends on the randomizer
+     * used.
+     *
+     *
+     * `child` is an object that has the following properties - use child.get(propertyName)
+     * to access:
+     * - `additionalInformation`: String; additional information field from child form
+     * - `ageAtBirth`: String; child's gestational age at birth in weeks. Possible values are
+     *   "24" through "39", "na" (not sure or prefer not to answer),
+     * "<24" (under 24 weeks), and "40>" (40 or more weeks).
+     * - `birthday`: Date object
+     * - `gender`: "f" (female), "m" (male), "o" (other), or "na" (prefer not to answer)
+     * - `givenName`: String, child's given name/nickname
+     * - `id`: String, child UUID
+     * - `languageList`: String, space-separated list of languages child is exposed to
+     * (2-letter codes)
+     * - `conditionList`: String, space-separated list of conditions/characteristics
+     * of child from registration form, as used in criteria expression, e.g.
+     * "autism_spectrum_disorder deaf multiple_birth"
+     *
+     *
+     * `pastSessions` is a list of previous response objects for this child and this study,
+     * ordered starting from most recent (at index 0 is this session!). Each has properties
+     * (access as pastSessions[i].get(propertyName)):
+     * - `completed`: Boolean, whether they submitted an exit survey
+     * - `completedConsentFrame`: Boolean, whether they got through at least a consent frame
+     * - `conditions`: Object representing any conditions assigned by randomizer frames
+     * - `createdOn`: Date object
+     * - `expData`: Object consisting of frameId: frameData pairs
+     * - `globalEventTimings`: list of any events stored outside of individual frames - currently
+     *   just used for attempts to leave the study early
+     * - `sequence`: ordered list of frameIds, corresponding to keys in expData
+     * - `isPreview`: Boolean, whether this is from a preview session (possible in the event
+     *   this is an experimenter's account)
+     *
+     *
+     * Example:
+     * ```
+     * function(expData, sequence, child, pastSessions, conditions) {
+     *     return {
+     *        'blocks':
+     *             [
+     *                 {
+     *                     'text': 'Name: ' + child.get('givenName')
+     *                 },
+     *                 {
+     *                     'text': 'Frame number: ' + sequence.length
+     *                 },
+     *                 {
+     *                     'text': 'N past sessions: ' + pastSessions.length
+     *                 }
+     *             ]
+     *       };
+     *   }
+     * ```
+     *
+     *
+     *  (This example is split across lines for readability; when added to JSON it would need
+     *  to be on one line.)
+
  *
  * @uses Full-screen
  * @uses Session-record
  */
-export default Ember.Component.extend(FullScreen, SessionRecord, {
+let ExpFrameBase = Ember.Component.extend(FullScreen, SessionRecord, {
     toast: Ember.inject.service(),
     // {String} the unique identifier for the _instance_
     id: null,
     kind: null,
+
+    classNames: ['lookit-frame'],
 
     extra: {},
 
@@ -71,7 +151,6 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
     frameContext: null,
     frameType: 'DEFAULT',
     eventTimings: null,
-    _oldFrameIndex: null,
 
     /**
      * Function to generate additional properties for this frame (like {"kind": "exp-lookit-text"})
@@ -114,7 +193,7 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
      * - `languageList`: String, space-separated list of languages child is exposed to
      * (2-letter codes)
      * - `conditionList`: String, space-separated list of conditions/characteristics
-     * - of child from registration form, as used in criteria expression, e.g.
+     * of child from registration form, as used in criteria expression, e.g.
      * "autism_spectrum_disorder deaf multiple_birth"
      *
      *
@@ -303,105 +382,112 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
 
         let currentFrameIndex = this.get('frameIndex', null);
 
-        let clean = currentFrameIndex !== this.get('_oldFrameIndex');
-
-        var defaultParams = this.setupParams(clean);
-        if (clean) {
-            Object.keys(defaultParams).forEach((key) => {
-                this.set(key, defaultParams[key]);
-            });
-        }
+        let defaultParams = this.setupParams(true);
+        Object.keys(defaultParams).forEach((key) => {
+            this.set(key, defaultParams[key]);
+        });
 
         if (!this.get('id')) {
-            var frameIndex = this.get('frameIndex');
-            var kind = this.get('kind');
-            this.set('id', `${kind}-${frameIndex}`);
+            this.set('id', `${this.get('kind')}-${currentFrameIndex}`);
         }
 
-        if (clean) {
-            var session = this.get('session');
-            var expData = session ? session.get('expData') : null;
-
-            // Load any existing data for this particular frame - e.g. for a survey that
-            // the participant is returning to via a previous button.
-            if (session && session.get('expData')) {
-                var key = this.get('frameIndex') + '-' + this.get('id');
-                if (expData[key]) {
-                    this.loadData(expData[key]);
-                }
+        // Finalize the frame ID! Handle case where due to navigation, frameId already exists in the sequence.
+        let sequence = this.get('session').get('sequence');
+        let origId = this.get('id');
+        if (sequence.includes(origId)) {
+            // Get stub: This ID with any -repeat-N removed
+            let repeatedFramePattern = /-repeat-(\d+)$/;
+            let stub = origId;
+            if (repeatedFramePattern.test(origId)) {
+                stub = origId.replace(repeatedFramePattern, '');
             }
-
-            // Use the provided generateProperties fn, if any, to generate properties for this
-            // frame on-the-fly based on expData, sequence, child, & pastSessions.
-            if (this.get('generateProperties')) { // Only if generateProperties is non-empty
-                try {
-                    this.set('_generatePropertiesFn', Function('return ' + this.get('generateProperties'))());
-                } catch (error) {
-                    console.error(error);
-                    throw new Error('generateProperties provided for this frame, but cannot be evaluated.');
+            // Find lowest N where stub-repeat-N doesn't already exist
+            let framePatternString = `^${stub}-repeat-(?<repeat>\\d+)$`;
+            let thisFramePattern = new RegExp(framePatternString);
+            let existingRepeatIndices = [];
+            sequence.forEach(function (frId) {
+                let match = frId.match(thisFramePattern);
+                if (match) {
+                    existingRepeatIndices.push(match.groups.repeat);
                 }
-                if (typeof (this.get('_generatePropertiesFn')) === 'function') {
-                    var sequence = session ? session.get('sequence', null) : null;
-                    var child = session ? session.get('child', null) : null;
-                    var conditions = session ? session.get('conditions', {}) : {};
-                    var frameContext = this.get('frameContext');
-                    var pastSessions = frameContext ? frameContext.pastSessions : null;
-                    var generatedParams = this._generatePropertiesFn(expData, sequence, child, pastSessions, conditions);
-                    if (typeof (generatedParams) === 'object') {
-                        this.set('generatedProperties', generatedParams);
-                        Object.keys(generatedParams).forEach((key) => {
-                            this.set(key, generatedParams[key]);
-                        });
-                    } else {
-                        throw new Error('generateProperties function provided for this frame, but did not return an object');
-                    }
-                } else {
-                    throw new Error('generateProperties provided for this frame, but does not evaluate to a function');
-                }
-            }
-
-            // Use the provided selectNextFrame fn, if any, to determine which frame should come
-            // next.
-            if (this.get('selectNextFrame')) { // Only if selectNextFrame is non-empty
-                try {
-                    this.set('_selectNextFrameFn', Function('return ' + this.get('selectNextFrame'))());
-                } catch (error) {
-                    console.error(error);
-                    throw new Error('selectNextFrame provided for this frame, but cannot be evaluated.');
-                }
-                if (!(typeof (this.get('_selectNextFrameFn')) === 'function')) {
-                    throw new Error('selectNextFrame provided for this frame, but does not evaluate to a function');
-                }
-            }
-
-            // After adding any generated properties, check that all required fields are set
-            if (this.get('frameSchemaProperties').hasOwnProperty('required')) {
-                var requiredFields = this.get('frameSchemaProperties.required', []);
-                requiredFields.forEach((key) => {
-                    if (!this.hasOwnProperty(key) || this.get(key) === undefined) {
-                        // Don't actually throw an error here because the frame may actually still function and that's probably good
-                        console.error(`Missing required parameter '${key}' for frame of kind '${this.get('kind')}'.`);
-                    }
-                });
-            }
-
-            // Use JSON schema validator to check that all values are within specified constraints
-            var ajv = new Ajv({
-                allErrors: true,
-                verbose: true
             });
-            var frameSchema = {type: 'object', properties: this.get('frameSchemaProperties')};
-            try {
-                var validate = ajv.compile(frameSchema);
-                var valid = validate(this);
-                if (!valid) {
-                    console.warn('Invalid: ' + ajv.errorsText(validate.errors));
-                }
-            }
-            catch (error) {
-                console.error(`Failed to compile frameSchemaProperties to use for validating researcher usage of frame type '${this.get('kind')}.`);
-            }
+            // Call this frame stub-repeat-N+1
+            let repeatIndex = existingRepeatIndices.length ? Math.max(...existingRepeatIndices) + 1 : 1;
+            this.set('id', stub + '-repeat-' + repeatIndex);
+        }
 
+        let session = this.get('session');
+        let expData = session ? session.get('expData') : null;
+
+        // Use the provided generateProperties fn, if any, to generate properties for this
+        // frame on-the-fly based on expData, sequence, child, & pastSessions.
+        if (this.get('generateProperties')) { // Only if generateProperties is non-empty
+            try {
+                this.set('_generatePropertiesFn', Function('return ' + this.get('generateProperties'))());
+            } catch (error) {
+                console.error(error);
+                throw new Error('generateProperties provided for this frame, but cannot be evaluated.');
+            }
+            if (typeof (this.get('_generatePropertiesFn')) === 'function') {
+                let sequence = session ? session.get('sequence', null) : null;
+                let child = session ? session.get('child', null) : null;
+                let conditions = session ? session.get('conditions', {}) : {};
+                let frameContext = this.get('frameContext');
+                let pastSessions = frameContext ? frameContext.pastSessions : null;
+                let generatedParams = this._generatePropertiesFn(expData, sequence, child, pastSessions, conditions);
+                if (typeof (generatedParams) === 'object') {
+                    this.set('generatedProperties', generatedParams);
+                    Object.keys(generatedParams).forEach((key) => {
+                        this.set(key, generatedParams[key]);
+                    });
+                } else {
+                    throw new Error('generateProperties function provided for this frame, but did not return an object');
+                }
+            } else {
+                throw new Error('generateProperties provided for this frame, but does not evaluate to a function');
+            }
+        }
+
+        // Use the provided selectNextFrame fn, if any, to determine which frame should come
+        // next.
+        if (this.get('selectNextFrame')) { // Only if selectNextFrame is non-empty
+            try {
+                this.set('_selectNextFrameFn', Function('return ' + this.get('selectNextFrame'))());
+            } catch (error) {
+                console.error(error);
+                throw new Error('selectNextFrame provided for this frame, but cannot be evaluated.');
+            }
+            if (!(typeof (this.get('_selectNextFrameFn')) === 'function')) {
+                throw new Error('selectNextFrame provided for this frame, but does not evaluate to a function');
+            }
+        }
+
+        // After adding any generated properties, check that all required fields are set
+        if (this.get('frameSchemaProperties').hasOwnProperty('required')) {
+            var requiredFields = this.get('frameSchemaProperties.required', []);
+            requiredFields.forEach((key) => {
+                if (!this.hasOwnProperty(key) || this.get(key) === undefined) {
+                    // Don't actually throw an error here because the frame may actually still function and that's probably good
+                    console.error(`Missing required parameter '${key}' for frame of kind '${this.get('kind')}'.`);
+                }
+            });
+        }
+
+        // Use JSON schema validator to check that all values are within specified constraints
+        var ajv = new Ajv({
+            allErrors: true,
+            verbose: true
+        });
+        var frameSchema = {type: 'object', properties: this.get('frameSchemaProperties')};
+        try {
+            var validate = ajv.compile(frameSchema);
+            var valid = validate(this);
+            if (!valid) {
+                console.warn('Invalid: ' + ajv.errorsText(validate.errors));
+            }
+        }
+        catch (error) {
+            console.error(`Failed to compile frameSchemaProperties to use for validating researcher usage of frame type '${this.get('kind')}.`);
         }
 
         this.set('_oldFrameIndex', currentFrameIndex);
@@ -420,7 +506,7 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
         // If the save failure was a server error, warn the user. This error should never disappear.
         // Note: errors are not visible in FS mode, which is generally the desired behavior so as not to silently
         // bias infant looking time towards right.
-        const msg = 'Check your internet connection. If another error like this still shows up as you continue, please contact lookit-tech@mit.edu to let us know!';
+        const msg = 'Please check your internet connection and (in another tab or window) that you are still logged in to Lookit. If another error like this still shows up as you continue, please contact lookit-tech@mit.edu to let us know!';
         this.get('toast').error(msg, 'Error: Could not save data', {timeOut: 0, extendedTimeOut: 0});
     },
 
@@ -452,6 +538,7 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
         defaultParams.generateProperties = null;
         defaultParams.generatedProperties = null;
         defaultParams.selectNextFrame = null;
+        defaultParams.parameters = null;
         Ember.assign(defaultParams, params);
 
         return defaultParams;
@@ -550,11 +637,7 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
         },
 
         next() {
-            /**
-             * Move to next frame
-             *
-             * @event nextFrame
-             */
+
             this.send('setTimeEvent', 'nextFrame');
 
             // Determine which frame to go to next
@@ -586,27 +669,41 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
             this.send('save');
 
             if (this.get('endSessionRecording') && this.get('sessionRecorder')) {
-                var _this = this;
+                let _this = this;
                 if (!(this.get('session').get('recordingInProgress'))) {
                     _this.sendAction('next', iNextFrame);
-                    window.scrollTo(0, 0);
                 } else {
                     this.get('session').set('recordingInProgress', false);
                     this.stopSessionRecorder().finally(() => {
                         _this.sendAction('next', iNextFrame);
-                        window.scrollTo(0, 0);
                     });
                 }
-
             } else {
                 this.sendAction('next', iNextFrame);
-                window.scrollTo(0, 0);
             }
 
         },
 
-        exit() {
-            this.sendAction('exit');
+        goToFrameIndex(frameIndex) {
+
+            // Note: this will allow participant to proceed even if saving fails as in next()
+            this.send('save');
+            this.set('_oldFrameIndex', -1); // Pretend no old frame index so we treat this as "clean" during didReceiveAttrs
+
+
+            if (this.get('endSessionRecording') && this.get('sessionRecorder')) {
+                let _this = this;
+                if (!(this.get('session').get('recordingInProgress'))) {
+                    _this.sendAction('next', frameIndex);
+                } else {
+                    this.get('session').set('recordingInProgress', false);
+                    this.stopSessionRecorder().finally(() => {
+                        _this.sendAction('next', frameIndex);
+                    });
+                }
+            } else {
+                this.sendAction('next', frameIndex);
+            }
         },
 
         previous() {
@@ -616,10 +713,12 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
              * @event previousFrame
              */
             this.send('setTimeEvent', 'previousFrame');
-            var frameId = `${this.get('id')}`; // don't prepend frameindex, done by parser
-            console.log(`Previous: Leaving frame ID ${frameId}`);
+            this.send('save');
             this.sendAction('previous');
-            window.scrollTo(0, 0);
+        },
+
+        exit() {
+            this.sendAction('exit');
         }
     },
 
@@ -627,7 +726,8 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
         // Add different classes depending on whether fullscreen mode is
         // being triggered as part of standard frame operation or as an override to a frame
         // that is not typically fullscreen. In latter case, keep formatting as close to
-        // before as possible, to enable forms etc. to work ok in fullscreen mode.
+        // before as possible, to enable forms etc. to work ok in fullscreen mode
+
         Ember.$('*').removeClass('player-fullscreen');
         Ember.$('*').removeClass('player-fullscreen-override');
         Ember.$('#application-parse-error-text').hide();
@@ -642,10 +742,12 @@ export default Ember.Component.extend(FullScreen, SessionRecord, {
         // Note: if this is defined the same way in full-screen.js, it gets called twice
         // for reasons I don't yet understand.
         if (this.get('displayFullscreenOverride') || this.get('displayFullscreen')) {
-            this.send('showFullscreen');
+            this.showFullscreen();
         } else {
-            this.send('exitFullscreen');
+            this.exitFullscreen();
         }
         this._super(...arguments);
     }
 });
+
+export default ExpFrameBase;
