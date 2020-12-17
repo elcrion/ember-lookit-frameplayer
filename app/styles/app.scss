@@ -55,6 +55,12 @@
 .exp-text {
     margin: auto;
     max-width: 65em;
+
+    img {
+        max-width: 100%;
+        display: block;
+        margin: auto;
+    }
 }
 
 .vertical-pad {
@@ -139,4 +145,32 @@ p#pipeClickPowered {
 
 .btn {
     font-size: large;
+}
+
+.video-record-mixin-wait-for-video, .pause-unpause-mixin-cover {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: none; // Initially hidden, only show if we actually use it!
+
+    .video-record-mixin-image, .pause-unpause-mixin-image {
+        margin: auto;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 25%;
+        height: 30%;
+    }
+
+  .video-record-mixin-wait-for-video-text, .pause-unpause-mixin-text {
+        font-size: 2em;
+        text-align: center;
+        top: 65%;
+        position: absolute;
+        left: 0;
+        right: 0;
+    }
+
 }
