@@ -61,7 +61,93 @@
             @PIContact={{PIContact}}
           />
 
-        {{/if}}
+                {{else if (eq template "consent_004")}}
+
+                    <ConsentTemplate004
+                            @experiment={{experiment}}
+                            @PIName={{PIName}}
+                            @institution={{institution}}
+                            @purpose={{purpose}}
+                            @payment={{payment}}
+                            @procedures={{procedures}}
+                            @datause={{datause}}
+                            @additional_segments={{additional_segments}}
+                            @research_rights_statement={{research_rights_statement}}
+                            @gdpr={{gdpr}}
+                            @gdpr_personal_data={{gdpr_personal_data}}
+                            @gdpr_sensitive_data={{gdpr_sensitive_data}}
+                            @PIContact={{PIContact}}
+                    />
+
+                {{else if (eq template "consent_005")}}
+
+                    <ConsentTemplate005
+                            @experiment={{experiment}}
+                            @PIName={{PIName}}
+                            @institution={{institution}}
+                            @purpose={{purpose}}
+                            @payment={{payment}}
+                            @procedures={{procedures}}
+                            @datause={{datause}}
+                            @additional_segments={{additional_segments}}
+                            @research_rights_statement={{research_rights_statement}}
+                            @gdpr={{gdpr}}
+                            @gdpr_personal_data={{gdpr_personal_data}}
+                            @gdpr_sensitive_data={{gdpr_sensitive_data}}
+                            @PIContact={{PIContact}}
+
+                            @risk_statement={{risk_statement}}
+                            @voluntary_participation={{voluntary_participation}}
+                            @include_databrary={{include_databrary}}
+                            @additional_video_privacy_statement={{additional_video_privacy_statement}}
+                            @risk_header={{risk_header}}
+                            @benefits_header={{benefits_header}}
+                    />
+
+                {{else if (eq template "consent_004")}}
+
+                    <ConsentTemplate004
+                            @experiment={{experiment}}
+                            @PIName={{PIName}}
+                            @institution={{institution}}
+                            @purpose={{purpose}}
+                            @payment={{payment}}
+                            @procedures={{procedures}}
+                            @datause={{datause}}
+                            @additional_segments={{additional_segments}}
+                            @research_rights_statement={{research_rights_statement}}
+                            @gdpr={{gdpr}}
+                            @gdpr_personal_data={{gdpr_personal_data}}
+                            @gdpr_sensitive_data={{gdpr_sensitive_data}}
+                            @PIContact={{PIContact}}
+                    />
+
+                {{else if (eq template "consent_005")}}
+
+                    <ConsentTemplate005
+                            @experiment={{experiment}}
+                            @PIName={{PIName}}
+                            @institution={{institution}}
+                            @purpose={{purpose}}
+                            @payment={{payment}}
+                            @procedures={{procedures}}
+                            @datause={{datause}}
+                            @additional_segments={{additional_segments}}
+                            @research_rights_statement={{research_rights_statement}}
+                            @gdpr={{gdpr}}
+                            @gdpr_personal_data={{gdpr_personal_data}}
+                            @gdpr_sensitive_data={{gdpr_sensitive_data}}
+                            @PIContact={{PIContact}}
+
+                            @risk_statement={{risk_statement}}
+                            @voluntary_participation={{voluntary_participation}}
+                            @include_databrary={{include_databrary}}
+                            @additional_video_privacy_statement={{additional_video_privacy_statement}}
+                            @risk_header={{risk_header}}
+                            @benefits_header={{benefits_header}}
+                    />
+
+                {{/if}}
 
       </div>
     </div>
@@ -90,10 +176,10 @@
       </div>
     </div>
 
-    <div class="video-consent-numbered-direction">
-      <span class="video-consent-number">3.</span>
-      <span class="video-consent-direction">Read the statement below <em class="video-consent-outloud"> out loud: </em></span>
-    </div>
+        <div class="video-consent-numbered-direction">
+            <span class="video-consent-number">3.</span>
+            <span class="video-consent-direction">Read the statement below <em class="video-consent-outloud"> out loud</em>{{#if (not (or (eq template "consent_003") (eq template "consent_002") (eq template "consent_001")))}} (or in ASL){{/if}}: </span>
+        </div>
 
     <div class="well video-consent-prompt">
       <span class="breaklines exp-lookit-video-consent-prompt">"I have read and understand the consent document. I am this child's parent or legal guardian and we both agree to participate in this study."</span>
