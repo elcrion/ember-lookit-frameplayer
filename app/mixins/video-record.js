@@ -179,7 +179,7 @@ export default Ember.Mixin.create({
 
     _generateVideoId() {
         return [
-            'videoStream',
+            this.get('frameType') === 'CONSENT' ? 'consent-videoStream' : 'videoStream',
             this.get('experiment.id'),
             this.get('id'),
             this.get('session.id'),
